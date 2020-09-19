@@ -3,8 +3,8 @@ import unittest
 class DictNested(dict):
     """
     Naive dictionary extension to work with deeply nested keys.
-    Class provides methods to get info from deeply nested dictionary and
-    set/reset/delete values in nested dict
+    Class provides methods to get values and dictionaries from deeply nested
+    dictionary and set/reset/delete values in nested dictionary.
     """
 
     def check_input(self, path):
@@ -18,13 +18,27 @@ class DictNested(dict):
                 path = path.split(".")
             else:
                 path = list(path)
-        elif isinstance(path, list) or isinstance(path, tuple):
-            pass
+        elif isinstance(path, list):
+            if all(isinstance(item, str) for item in path):
+                pass
+            else:
+                [str(i) for i in path]
+        elif isinstance(path, tuple):
+            if all(isinstance(item, str) for item in path):
+                pass
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
+
         return self, path
 
     def get_nested(self, path):
+        """
+        Method returns entry in nested dict
+        In case no info found None is returned
+        """
+
         self, path = DictNested.check_input(self, path)
 
         val = self
@@ -44,6 +58,27 @@ class DictNested(dict):
         return self
 
     def set_nested(self, path, content = None, reset = False):
+        """
+        Method takes dictionary instance and path of keys in following formats:
+        - just a string is converted to path of separate chars "abcd" =>
+        ["a", "b", "c", "d"];
+        - string with dots is converted to path of separate strings "abc.def.g"
+        => ["abc", "def", "g"];
+        - tuple or list of strings is provided to method as is, list is always
+        converted to list of strings.
+
+        If content is set, it will be the value of final entry.
+        If reset is set to True, in case there is a value already, it will be
+        set to None.
+
+        You can achieve pretty same by just entering:
+        dictionary = {}
+        dictionary["a"] = {}
+        dictionary["a"]["b"] = {}
+        ...
+        dictionary["a"]["b"]["c"]["d"] = content
+        """
+
         self, path = DictNested.check_input(self, path)
 
         if self == False:
@@ -96,7 +131,7 @@ class DictNested(dict):
         - if len of path is 1, mathod has similar behavior to default
         del(dictionary[key])
         """
-        # res = DictNested.get_nested(self, path)
+
         self, path = DictNested.check_input(self, path)
 
         if self == False:
